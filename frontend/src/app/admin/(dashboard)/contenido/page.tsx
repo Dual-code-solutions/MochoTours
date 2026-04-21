@@ -1,18 +1,23 @@
-/**
- * Página de Contenido del Sitio — /admin/contenido
- * Se construirá completamente en el Paso 6.
- */
+import { Metadata } from 'next';
+import { SiteContentManager } from '@/widgets/site-content-form/ui/SiteContentManager';
+
+export const metadata: Metadata = {
+  title: 'Contenido del Sitio | Admin Mochótours',
+};
+
 export default function AdminContenidoPage() {
   return (
-    <main className="flex items-center justify-center min-h-screen bg-cream">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-primary mb-2">
+    <div className="max-w-5xl mx-auto py-8 px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold font-fraunces text-stone-900">
           Contenido del Sitio
         </h1>
-        <p className="text-stone-text">
-          Se construirá en el Paso 6
+        <p className="text-stone-500 mt-2">
+          Gestiona los textos principales, títulos y configuraciones de las secciones del sitio web.
         </p>
       </div>
-    </main>
+
+      <SiteContentManager />
+    </div>
   );
 }

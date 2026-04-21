@@ -13,4 +13,5 @@ export const ROUTES = {
   ADMIN_LOGIN: '/admin/login',
   ADMIN_CONTENT: '/admin/contenido',
   ADMIN_GALLERY: '/admin/galeria',
+  ADMIN_CONTACT: '/admin/contacto',
 } as const;

@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
         hostname: 'nsbjrbpfclxyvgvzqpdt.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'wgrlytkoofupwnmerkju.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
     // Formatos modernos que Next.js generará automáticamente
     // WebP: ~30% más ligero que JPG | AVIF: ~50% más ligero

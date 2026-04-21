@@ -108,6 +108,7 @@ async function get<T>(
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: buildHeaders(withAuth),
+    cache: 'no-store', // 🔴 CRÍTICO: Previene que Next.js almacene errores viejos o datos desactualizados en el admin
   });
 
   return handleResponse<T>(response);
@@ -166,6 +167,35 @@ async function postFormData<T>(
 }
 
 /**
+ * PUT request con FormData (multipart/form-data).
+ * @param path - Ruta relativa
+ * @param formData - FormData con los campos y archivos
+ * @param withAuth - Si se debe enviar el token (default: true)
+ */
+async function putFormData<T>(
+  path: string,
+  formData: FormData,
+  withAuth = true
+): Promise<T> {
+  const headers: Record<string, string> = {};
+
+  if (withAuth) {
+    const token = getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method: 'PUT',
+    headers,
+    body: formData,
+  });
+
+  return handleResponse<T>(response);
+}
+
+/**
  * DELETE request.
  * @param path - Ruta relativa (ej: '/api/galeria/uuid')
  * @param withAuth - Si se debe enviar el token (default: true)
@@ -185,5 +215,6 @@ export const apiClient = {
   get,
   post,
   postFormData,
+  putFormData,
   delete: del,
 } as const;
