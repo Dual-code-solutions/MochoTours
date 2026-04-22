@@ -93,6 +93,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             height={40}
             className="h-9 w-auto"
             style={{ width: 'auto', height: '100%' }}
+            priority
           />
         </Link>
 
