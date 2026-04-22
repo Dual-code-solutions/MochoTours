@@ -6,12 +6,13 @@ import { GetContactInfo } from '../application/use-cases/GetContactInfo';
 import { UpdateContactInfo } from '../application/use-cases/UpdateContactInfo';
 import type { ContactInfo } from '../domain/entities/ContactInfo';
 import { ContactInfoForm } from './ContactInfoForm';
+import { toast } from 'sonner';
 
 export function ContactInfoPanel() {
   const [data, setData] = useState<ContactInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Hexagonal dependencies wire-up
   const repository = new ApiContactInfoRepository();
@@ -23,29 +24,31 @@ export function ContactInfoPanel() {
       try {
         const result = await getContactInfoUseCase.execute();
         setData(result);
-      } catch (err) {
-        console.error('Failed to load contact info:', err);
-        setToastMessage({ type: 'error', text: 'Error al cargar la información de contacto' });
+      } catch (err: unknown) {
+        const error = err as Error;
+        console.error('Failed to load contact info:', error);
+        toast.error('Error de carga', { description: 'No se pudo cargar la información de contacto.' });
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSave = async (formData: ContactInfo) => {
     setIsSaving(true);
-    setToastMessage(null);
     try {
       const result = await updateContactInfoUseCase.execute(formData);
       setData(result);
-      setToastMessage({ type: 'success', text: 'Cambios guardados correctamente.' });
-    } catch (err) {
-      console.error('Failed to update contact info:', err);
-      setToastMessage({ type: 'error', text: 'Ocurrió un error al guardar los cambios.' });
+      toast.success('Cambios guardados', { description: 'La información se actualizó correctamente.' });
+      setIsEditing(false);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error('Failed to update contact info:', error);
+      toast.error('Error al guardar', { description: 'Ocurrió un error al intentar guardar.' });
     } finally {
       setIsSaving(false);
-      setTimeout(() => setToastMessage(null), 3000);
     }
   };
 
@@ -54,21 +57,31 @@ export function ContactInfoPanel() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 lg:p-8">
-      <div className="mb-6 pb-6 border-b border-stone-100 flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold text-stone-900">Información de Contacto</h2>
-          <p className="text-stone-500 text-sm mt-1">Administra los teléfonos, correo y redes sociales que aparecen en la página pública.</p>
+    <div className="bg-stone-50 min-h-screen pb-32 -mx-4 -mt-8 pt-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold font-fraunces text-stone-900">Información de contacto</h2>
+            <p className="text-stone-500 text-[15px] mt-1.5">Administra los teléfonos, correo y redes sociales que aparecen en la página pública.</p>
+          </div>
+          {!isEditing && !isLoading && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 bg-white border border-stone-200 text-stone-700 hover:text-stone-900 hover:bg-stone-50 rounded-lg text-sm font-medium transition-colors"
+            >
+              Editar datos
+            </button>
+          )}
         </div>
+
+        <ContactInfoForm 
+          initialData={data} 
+          onSubmit={handleSave} 
+          isLoading={isSaving} 
+          isEditing={isEditing}
+          onCancel={() => setIsEditing(false)}
+        />
       </div>
-
-      {toastMessage && (
-        <div className={`p-4 mb-6 rounded-xl border ${toastMessage.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
-          {toastMessage.text}
-        </div>
-      )}
-
-      <ContactInfoForm initialData={data} onSubmit={handleSave} isLoading={isSaving} />
     </div>
   );
 }

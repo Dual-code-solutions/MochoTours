@@ -20,13 +20,14 @@ type Props = {
   seccionId: string;
   seccionActual?: SiteSection;
   onSuccess: (updatedSection: SiteSection) => void;
+  onCancel?: () => void;
 };
 
-export function SectionForm({ seccionId, seccionActual, onSuccess }: Props) {
+export function SectionForm({ seccionId, seccionActual, onSuccess, onCancel }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(seccionActual?.imagenUrl || null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<SectionFormData>({
+  const { register, handleSubmit } = useForm<SectionFormData>({
     defaultValues: {
       titulo: seccionActual?.titulo || '',
       descripcion: seccionActual?.descripcion || '',
@@ -66,7 +67,7 @@ export function SectionForm({ seccionId, seccionActual, onSuccess }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-24 md:pb-0">
       
       <div>
         <Label htmlFor="titulo">Título de la sección</Label>
@@ -129,14 +130,19 @@ export function SectionForm({ seccionId, seccionActual, onSuccess }: Props) {
         </div>
       </div>
 
-      <div className="flex justify-end pt-4">
-        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto min-w-[200px]">
-          {isSubmitting ? (
-             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando</>
-          ) : (
-             'Guardar Cambios'
-          )}
-        </Button>
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-stone-200 md:relative md:border-0 z-50 md:p-0 md:pt-4 md:bg-transparent">
+        <div className="flex gap-3 md:justify-end">
+          <Button type="button" variant="outline" onClick={onCancel} className="flex-1 md:flex-none">
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="flex-1 md:flex-none md:min-w-[200px]">
+            {isSubmitting ? (
+               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando</>
+            ) : (
+               'Guardar Cambios'
+            )}
+          </Button>
+        </div>
       </div>
     </form>
   );

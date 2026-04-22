@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
     // Formatos modernos que Next.js generará automáticamente
     // WebP: ~30% más ligero que JPG | AVIF: ~50% más ligero
     formats: ['image/avif', 'image/webp'],
+    qualities: [75, 85, 100],
   },
 };
 

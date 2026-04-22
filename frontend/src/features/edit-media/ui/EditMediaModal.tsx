@@ -35,6 +35,7 @@ export function EditMediaModal({ isOpen, onClose, targetMedia, onSuccess }: Edit
   // Sincronizar states si el usuario cierra y abre el modal agresivamente con otra foto
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitulo(targetMedia.titulo || '');
       setDescripcion(targetMedia.descripcion || '');
       setPreview(targetMedia.urlMedia || null);

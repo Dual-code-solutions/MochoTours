@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, DragEvent, ChangeEvent } from 'react';
-import { UploadCloud, FileVideo, ImageIcon, X, Loader2 } from 'lucide-react';
+import { UploadCloud, FileVideo, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { uploadMedia, Media } from '@/entities/media';
 import { Button } from '@/shared/ui/button';

@@ -5,6 +5,7 @@ import { FALLBACK_DATA } from '@/shared/config/public-data';
 type GalleryImage = {
   src: string;
   alt: string;
+  description?: string;
   isVideo?: boolean;
 };
 
@@ -33,14 +34,15 @@ export function useShuffledGallery() {
 
     const fetchGallery = async () => {
       try {
-        const res = await getGallery({ page: 1, limit: 20 });
+        const res = await getGallery({ page: 1, limit: 100 });
         const items = res.data;
 
         if (items && items.length > 0) {
           // Convertir datos del backend al formato visual
           const mapped: GalleryImage[] = items.map((item) => ({
             src: item.urlMedia || '',
-            alt: item.titulo || 'Cenote en Homún, Yucatán — Mochótours',
+            alt: item.titulo || 'Cenote en Homún, Yucatán — Mochotours',
+            description: item.descripcion || '',
             isVideo: item.tipo === 'video',
           }));
           const shuffled = shuffleArray(mapped);
@@ -62,17 +64,17 @@ export function useShuffledGallery() {
           setTotalCount(res.meta?.total || items.length);
         } else {
           // BD vacía → todo local
-          useFallback();
+          applyFallback();
         }
       } catch {
         // Red caída → todo local
-        useFallback();
+        applyFallback();
       } finally {
         setIsLoading(false);
       }
     };
 
-    const useFallback = () => {
+    const applyFallback = () => {
       const shuffled = shuffleArray(FALLBACK_DATA.galeriaPreview);
       setImages(shuffled.slice(0, TARGET));
       setTotalCount(shuffled.length);

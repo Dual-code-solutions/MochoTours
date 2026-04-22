@@ -140,3 +140,8 @@
     font-family: var(--font-heading);
   }
 }
+
+/* Fix for Lightbox video controls being blocked by captions on mobile */
+.yarl__slide_captions_container {
+  pointer-events: none;
+}

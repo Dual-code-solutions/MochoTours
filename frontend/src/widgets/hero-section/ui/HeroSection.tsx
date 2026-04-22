@@ -19,7 +19,7 @@ export function HeroSection() {
         if (res?.hero_banner) {
           setData(res.hero_banner);
         }
-      } catch (e) {
+      } catch {
          // Silently fail -> Usaremos Fallback Local
          console.warn("Backend irrecuperable de momento, operando con caché local (Stale-while-revalidate)");
       }
@@ -58,7 +58,7 @@ export function HeroSection() {
         
         {/* Subtitulillo Anunciador */}
         <span className="animate-in fade-in slide-in-from-bottom-4 duration-700 font-inter text-sm md:text-base tracking-[0.25em] text-white/80 uppercase font-medium mb-6">
-           MOCHÓTOURS | Homún, Yucatán
+           MOCHOTOURS | Homún, Yucatán
         </span>
 
         {/* Título Monumental */}

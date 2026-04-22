@@ -7,7 +7,8 @@ import type { ValidationFieldError } from './types';
 
 // ── Constantes ──────────────────────────────────────────────────────
 
-const TOKEN_KEY = 'token';
+const TOKEN_KEY         = 'token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 
 // ── Helpers de token ────────────────────────────────────────────────
 
@@ -20,14 +21,102 @@ export function setToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token);
 }
 
+export function setRefreshToken(refreshToken: string): void {
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+}
+
+export function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
 export function removeToken(): void {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+// ── Refresh automático ──────────────────────────────────────────────
+
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+/**
+ * Intenta renovar la sesión usando el refresh_token.
+ * Retorna true si logró obtener un nuevo access_token,
+ * false si el refresh también falló (→ hay que hacer re-login).
+ *
+ * Usa un mutex para evitar múltiples llamadas concurrentes.
+ */
+async function attemptRefresh(): Promise<boolean> {
+  // Si ya hay un refresh en curso, esperar su resultado
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  const savedRefreshToken = getRefreshToken();
+  if (!savedRefreshToken) return false;
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: savedRefreshToken }),
+      });
+
+      if (!response.ok) return false;
+
+      const json = await response.json();
+      if (json.success && json.data) {
+        setToken(json.data.accessToken);
+        setRefreshToken(json.data.refreshToken);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 }
 
 // ── Manejo de respuestas ────────────────────────────────────────────
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  // Si el token expiró o es inválido, limpiar y redirigir
+/**
+ * Procesa la respuesta del servidor.
+ * Si recibe 401, intenta refresh automático antes de redirigir al login.
+ *
+ * @param retryFn - Función que re-ejecuta la request original (con el nuevo token)
+ * @param hasRetried - Flag para evitar loops infinitos de retry
+ */
+async function handleResponse<T>(
+  response: Response,
+  retryFn?: () => Promise<Response>,
+  hasRetried = false
+): Promise<T> {
+  // Si el token expiró, intentar refresh antes de rendirse
+  if (response.status === 401 && !hasRetried && retryFn) {
+    const refreshed = await attemptRefresh();
+    if (refreshed) {
+      // Reintentar la request original con el nuevo token
+      const retryResponse = await retryFn();
+      return handleResponse<T>(retryResponse, undefined, true);
+    }
+
+    // Refresh falló → limpiar y redirigir al login
+    removeToken();
+    if (typeof window !== 'undefined') {
+      window.location.href = ROUTES.ADMIN_LOGIN;
+    }
+    throw new ApiException('Sesión expirada. Inicia sesión nuevamente.', 401);
+  }
+
+  // 401 sin retry disponible (ya se intentó o no aplica)
   if (response.status === 401) {
     removeToken();
     if (typeof window !== 'undefined') {
@@ -105,13 +194,14 @@ async function get<T>(
     });
   }
 
-  const response = await fetch(url.toString(), {
+  const doFetch = () => fetch(url.toString(), {
     method: 'GET',
     headers: buildHeaders(withAuth),
-    cache: 'no-store', // 🔴 CRÍTICO: Previene que Next.js almacene errores viejos o datos desactualizados en el admin
+    cache: 'no-store',
   });
 
-  return handleResponse<T>(response);
+  const response = await doFetch();
+  return handleResponse<T>(response, withAuth ? doFetch : undefined);
 }
 
 /**
@@ -125,13 +215,14 @@ async function post<T>(
   body: Record<string, unknown>,
   withAuth = true
 ): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const doFetch = () => fetch(`${API_URL}${path}`, {
     method: 'POST',
     headers: buildHeaders(withAuth),
     body: JSON.stringify(body),
   });
 
-  return handleResponse<T>(response);
+  const response = await doFetch();
+  return handleResponse<T>(response, withAuth ? doFetch : undefined);
 }
 
 /**
@@ -148,22 +239,23 @@ async function postFormData<T>(
   formData: FormData,
   withAuth = true
 ): Promise<T> {
-  const headers: Record<string, string> = {};
-
-  if (withAuth) {
-    const token = getToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+  const buildAuthHeaders = () => {
+    const headers: Record<string, string> = {};
+    if (withAuth) {
+      const token = getToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
     }
-  }
+    return headers;
+  };
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const doFetch = () => fetch(`${API_URL}${path}`, {
     method: 'POST',
-    headers,
+    headers: buildAuthHeaders(),
     body: formData,
   });
 
-  return handleResponse<T>(response);
+  const response = await doFetch();
+  return handleResponse<T>(response, withAuth ? doFetch : undefined);
 }
 
 /**
@@ -177,22 +269,23 @@ async function putFormData<T>(
   formData: FormData,
   withAuth = true
 ): Promise<T> {
-  const headers: Record<string, string> = {};
-
-  if (withAuth) {
-    const token = getToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+  const buildAuthHeaders = () => {
+    const headers: Record<string, string> = {};
+    if (withAuth) {
+      const token = getToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
     }
-  }
+    return headers;
+  };
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const doFetch = () => fetch(`${API_URL}${path}`, {
     method: 'PUT',
-    headers,
+    headers: buildAuthHeaders(),
     body: formData,
   });
 
-  return handleResponse<T>(response);
+  const response = await doFetch();
+  return handleResponse<T>(response, withAuth ? doFetch : undefined);
 }
 
 /**
@@ -201,12 +294,34 @@ async function putFormData<T>(
  * @param withAuth - Si se debe enviar el token (default: true)
  */
 async function del<T>(path: string, withAuth = true): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const doFetch = () => fetch(`${API_URL}${path}`, {
     method: 'DELETE',
     headers: buildHeaders(withAuth),
   });
 
-  return handleResponse<T>(response);
+  const response = await doFetch();
+  return handleResponse<T>(response, withAuth ? doFetch : undefined);
+}
+
+/**
+ * PUT request con JSON body.
+ * @param path - Ruta relativa
+ * @param body - Objeto que se envía como JSON
+ * @param withAuth - Si se debe enviar el token (default: true)
+ */
+async function put<T>(
+  path: string,
+  body: Record<string, unknown>,
+  withAuth = true
+): Promise<T> {
+  const doFetch = () => fetch(`${API_URL}${path}`, {
+    method: 'PUT',
+    headers: buildHeaders(withAuth),
+    body: JSON.stringify(body),
+  });
+
+  const response = await doFetch();
+  return handleResponse<T>(response, withAuth ? doFetch : undefined);
 }
 
 // ── Export del cliente ───────────────────────────────────────────────
@@ -214,7 +329,9 @@ async function del<T>(path: string, withAuth = true): Promise<T> {
 export const apiClient = {
   get,
   post,
+  put,
   postFormData,
   putFormData,
   delete: del,
 } as const;
+

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getSiteContent } from '@/entities/site-content';
 import { FALLBACK_DATA } from '@/shared/config/public-data';
-import { Languages, Award, MapPin, ArrowRight, Check } from 'lucide-react';
+import { Languages, Award, MapPin, ArrowRight } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -114,12 +114,6 @@ export function AboutGuide() {
                 <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/20 to-transparent opacity-60 rounded-t-[2rem]" />
                 <div className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/10 pointer-events-none" />
               </div>
-            </div>
-
-            {/* Badge flotante */}
-            <div className="absolute -top-4 -left-1 lg:top-8 lg:-left-6 bg-primary text-white text-xs font-bold tracking-wider uppercase px-5 py-2.5 rounded-full shadow-xl z-30 flex items-center gap-2">
-              <Check className="h-4 w-4" strokeWidth={3} />
-              Guía local desde {new Date().getFullYear() - guide.años_experiencia}
             </div>
           </div>
 

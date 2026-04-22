@@ -16,7 +16,6 @@ interface ContactFooterProps {
 export function ContactFooter({ contactInfo }: ContactFooterProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
   const [footerData, setFooterData] = useState<{
     titulo?: string | null;
     descripcion?: string | null;
@@ -37,11 +36,7 @@ export function ContactFooter({ contactInfo }: ContactFooterProps) {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+
 
   // Fetch datos del backend (silencioso)
   useEffect(() => {
@@ -68,14 +63,14 @@ export function ContactFooter({ contactInfo }: ContactFooterProps) {
   const emailVal = contactInfo?.email || 'contacto@mochotours.com';
 
   // SVG icons para redes (no existen en lucide-react)
-  const FacebookIcon = () => (
-    <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+  const FacebookIcon = ({ className = "h-6 w-6 text-white" }) => (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
   );
-  const InstagramIcon = () => (
-    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
+  const InstagramIcon = ({ className = "h-6 w-6 text-white" }) => (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
   );
-  const TikTokIcon = () => (
-    <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.88-2.88 2.89 2.89 0 012.88-2.88c.28 0 .56.04.81.1v-3.5a6.37 6.37 0 00-.81-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.7 4.6 6.28 6.28 0 001.98-4.6V8.73A8.26 8.26 0 0019.59 10V6.69z"/></svg>
+  const TikTokIcon = ({ className = "h-6 w-6 text-white" }) => (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.88-2.88 2.89 2.89 0 012.88-2.88c.28 0 .56.04.81.1v-3.5a6.37 6.37 0 00-.81-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.7 4.6 6.28 6.28 0 001.98-4.6V8.73A8.26 8.26 0 0019.59 10V6.69z"/></svg>
   );
 
   const redes = [
@@ -83,6 +78,8 @@ export function ContactFooter({ contactInfo }: ContactFooterProps) {
     { Icon: InstagramIcon, href: contactInfo?.instagramUrl || 'https://instagram.com/mochotours', label: 'Instagram' },
     { Icon: TikTokIcon, href: contactInfo?.tiktokUrl || 'https://tiktok.com/@mochotours', label: 'TikTok' },
   ];
+
+  const waMessage = 'Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20los%20tours%20de%20cenotes';
 
   return (
     <footer ref={sectionRef} className="relative min-h-[600px] flex flex-col items-center justify-center overflow-hidden">
@@ -92,24 +89,25 @@ export function ContactFooter({ contactInfo }: ContactFooterProps) {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${imagenUrl})` }}
       />
+      <div className="absolute inset-0 bg-black/40" />
 
-      {/* Contenido */}
+      {/* Contenido principal */}
       <div
-        className="relative z-20 text-center px-6 py-20 max-w-3xl mx-auto"
+        className="relative z-20 w-full text-center px-6 pt-24 pb-16 max-w-4xl mx-auto flex-1 flex flex-col items-center justify-center"
         style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}
       >        
         {/* Label */}
         <span
-          className={`text-white/70 text-sm font-semibold tracking-[0.25em] uppercase transition-all duration-700 ${
+          className={`text-white/80 text-sm font-semibold tracking-[0.25em] uppercase transition-all duration-700 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
           Contacto
         </span>
 
-        {/* Título */}
+        {/* Título (mejorado para mobile) */}
         <h2
-          className={`font-fraunces text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-4 transition-all duration-700 delay-100 ${
+          className={`font-fraunces text-[40px] leading-[1.1] md:text-5xl lg:text-6xl font-bold text-white mt-4 text-balance transition-all duration-700 delay-100 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
@@ -118,20 +116,20 @@ export function ContactFooter({ contactInfo }: ContactFooterProps) {
 
         {/* Subtítulo */}
         <p
-          className={`text-white/80 text-lg mt-4 font-light transition-all duration-700 delay-200 ${
+          className={`text-white/90 text-lg md:text-xl mt-4 font-medium transition-all duration-700 delay-200 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
           {descripcion}
         </p>
 
-        {/* Botón WhatsApp grande */}
+        {/* Botón WhatsApp principal y micro-copy */}
         <div
-          className={`mt-10 transition-all duration-700 delay-300 ${
+          className={`mt-10 flex flex-col items-center transition-all duration-700 delay-300 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
-          <Link href={`https://wa.me/${phone1}?text=Hola%2C%20me%20interesa%20reservar%20un%20tour%20de%20cenotes`} target="_blank" rel="noopener noreferrer">
+          <Link href={`https://wa.me/${phone1}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" aria-label="Reservar tour por WhatsApp">
             <Button
               size="lg"
               className="h-16 px-10 rounded-full bg-[#25D366] hover:bg-[#1DA851] text-white text-lg font-semibold shadow-[0_0_20px_rgba(37,211,102,0.4)] transition-all hover:scale-105"
@@ -140,84 +138,137 @@ export function ContactFooter({ contactInfo }: ContactFooterProps) {
               Reservar por WhatsApp
             </Button>
           </Link>
+          <p className="text-white/80 text-sm mt-3 font-medium flex items-center gap-1.5">
+            <span>⚡</span> Respondemos en menos de 10 minutos
+          </p>
         </div>
 
         {/* Botones secundarios */}
         <div
-          className={`flex flex-col sm:flex-row items-center justify-center gap-3 mt-6 transition-all duration-700 delay-400 ${
+          className={`flex flex-col items-center w-full mt-10 transition-all duration-700 delay-400 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
-          <Link href={`tel:+${phone1}`}>
-            <Button variant="outline" className="rounded-full bg-white/20 backdrop-blur-sm border-white/50 text-white hover:bg-white hover:text-stone-900 px-6 transition-all active:scale-95">
-              <Phone className="mr-2 h-4 w-4" />
-              Llamar
-            </Button>
-          </Link>
-          <Link href={`https://wa.me/${phone2}`} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" className="rounded-full bg-white/20 backdrop-blur-sm border-white/50 text-white hover:bg-white hover:text-stone-900 px-6 transition-all active:scale-95">
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Línea secundaria
-            </Button>
-          </Link>
-          <Link href={`mailto:${emailVal}`}>
-            <Button variant="outline" className="rounded-full bg-white/20 backdrop-blur-sm border-white/50 text-white hover:bg-white hover:text-stone-900 px-6 transition-all active:scale-95">
-              <Mail className="mr-2 h-4 w-4" />
-              Correo
-            </Button>
-          </Link>
+          <span className="text-white/70 text-xs font-bold tracking-[0.2em] uppercase mb-4">
+            ¿PREFIERES OTRO MEDIO?
+          </span>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full max-w-[600px]">
+            <Link href={`tel:+${phone1}`} aria-label="Llamar al número principal" className="w-full">
+              <Button variant="outline" className="w-full h-12 rounded-full bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-stone-900 transition-all active:scale-95">
+                <Phone className="mr-2 h-4 w-4" />
+                Llamar
+              </Button>
+            </Link>
+            <Link href={`https://wa.me/${phone2}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" aria-label="Contactar al número alterno" className="w-full">
+              <Button variant="outline" className="w-full h-12 rounded-full bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-stone-900 transition-all active:scale-95">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Otro número
+              </Button>
+            </Link>
+            <Link href={`mailto:${emailVal}`} aria-label="Enviar correo electrónico" className="w-full col-span-2 md:col-span-1">
+              <Button variant="outline" className="w-full h-12 rounded-full bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-stone-900 transition-all active:scale-95">
+                <Mail className="mr-2 h-4 w-4" />
+                Correo
+              </Button>
+            </Link>
+          </div>
         </div>
-
-        {/* Redes sociales */}
-        <div
-          className={`flex items-center justify-center gap-4 mt-12 transition-all duration-700 delay-500 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`}
-        >
-          {redes.map((red, i) => {
-            const IconComp = red.Icon;
-            return (
-              <Link
-                key={red.label}
-                href={red.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Visitar ${red.label}`}
-                className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
-                style={{ transitionDelay: `${600 + i * 80}ms` }}
-              >
-                <IconComp />
-              </Link>
-            );
-          })}
-        </div>
-
       </div>
 
-      {/* Barra inferior */}
-      <div className="relative z-20 w-full border-t border-white/20 py-6 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          {/* Logo pequeño */}
-          <div className="flex items-center gap-3">
+      {/* ═══ FOOTER MEJORADO ═══ */}
+      <div className="relative z-20 w-full border-t border-white/20 bg-stone-900/60 backdrop-blur-md pt-12 pb-6 px-6 mt-auto">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-10 mb-10 text-left">
+          
+          {/* Col 1: Marca y descripción */}
+          <div className="flex flex-col items-center text-center gap-4">
             <Image
               src="/logo.png"
-              alt="Logo Mochótours"
-              width={40}
-              height={40}
-              className="rounded-full"
+              alt="Logo Mochotours"
+              width={150}
+              height={150}
+              className="rounded-full w-auto h-auto"
+              style={{ width: 'auto', height: 'auto' }}
             />
-            <span className="text-white/60 text-sm font-medium">Mochótours</span>
+            <span className="text-white font-bold text-3xl tracking-wide mt-2">Mochotours</span>
+            <p className="text-white/70 text-sm leading-relaxed max-w-[280px]">
+              Tours guiados por los cenotes más impresionantes de Homún, Yucatán. Experiencia auténtica con guías locales.
+            </p>
           </div>
 
-          {/* Copyright */}
-          <p className="text-white/40 text-xs">
-            © {new Date().getFullYear()} Cenotes Aventura y Más · Homún, Yucatán
-          </p>
+          {/* Col 2: Secciones */}
+          <div className="flex flex-col gap-3">
+            <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-2">Explora</h4>
+            <Link href="/" className="text-white/60 hover:text-white transition-colors text-sm w-fit">Inicio</Link>
+            <Link href="/#sobre-mi" className="text-white/60 hover:text-white transition-colors text-sm w-fit">Sobre Mí</Link>
+            <Link href="/#experiencia" className="text-white/60 hover:text-white transition-colors text-sm w-fit">Experiencia</Link>
+            <Link href="/galeria" className="text-white/60 hover:text-white transition-colors text-sm w-fit">Galería</Link>
+          </div>
 
-          {/* Créditos */}
-          <p className="text-white/30 text-xs">
+          {/* Col 3: NAP (Name, Address, Phone) */}
+          <div className="flex flex-col gap-3">
+            <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-2">Contacto</h4>
+            <a href={`https://wa.me/${phone1}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 w-fit">
+              <Phone className="h-4 w-4" /> +52 {phone1.replace('52', '')}
+            </a>
+            <a href={`https://wa.me/${phone2}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 w-fit">
+              <Phone className="h-4 w-4" /> +52 {phone2.replace('52', '')}
+            </a>
+            <a href={`mailto:${emailVal}`} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 w-fit">
+              <Mail className="h-4 w-4" /> {emailVal}
+            </a>
+            <span className="text-white/60 text-sm flex items-start gap-2 mt-1">
+              <span className="mt-0.5">📍</span>
+              Calle 20 entre 5 y 5a, a 50 metros de la gasolinera Pemex, Homún, Yucatán, MX
+            </span>
+          </div>
+
+          {/* Col 4: Horario y Redes */}
+          <div className="flex flex-col gap-3">
+            <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-2">Horario y Redes</h4>
+            <span className="text-white/60 text-sm">
+              🕐 Todos los días, 9am – 6pm
+            </span>
+            
+            <div className="mt-4">
+              <span className="text-white/80 text-xs font-semibold uppercase tracking-wider block mb-3">Síguenos en:</span>
+              <div className="flex items-center gap-2.5">
+                {redes.map((red) => {
+                  const IconComp = red.Icon;
+                  return (
+                    <Link
+                      key={red.label}
+                      href={red.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Visitar ${red.label}`}
+                      className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/30 flex items-center justify-center transition-all hover:-translate-y-1"
+                    >
+                      <IconComp className="h-5 w-5 text-white" />
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom bar: Copyright y Créditos */}
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left pt-6 border-t border-white/10">
+          <p className="text-white/50 text-xs">
+            © {new Date().getFullYear()} Cenotes Aventura y Más · Homún, Yucatán. Todos los derechos reservados.
+          </p>
+          <p className="text-white/40 text-xs">
             Sitio creado por{' '}
-            <span className="text-white/50 font-medium">Dual Code Solutions</span>
+            <a 
+              href="https://dual-code-solutions.serviciodualcodesolutions-devs.workers.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/70 font-medium hover:text-white transition-colors underline-offset-4 hover:underline"
+              aria-label="Visitar sitio de Dual Code Solutions — Desarrollador del sitio"
+            >
+              Dual Code Solutions
+            </a>
           </p>
         </div>
       </div>

@@ -92,7 +92,7 @@ export function MediaList({ refreshTrigger, onTotalAssigned }: Props) {
           <Info className="h-8 w-8" />
         </div>
         <h3 className="text-xl font-bold font-fraunces text-stone-400">Galería Vacía</h3>
-        <p className="mt-2 text-stone-500 max-w-sm">No existen tesoros visuales guardados aquí. Arrastra una foto en el botón verde de "Subir" para empezar tu colección pública.</p>
+        <p className="mt-2 text-stone-500 max-w-sm">No existen tesoros visuales guardados aquí. Arrastra una foto en el botón verde de &quot;Subir&quot; para empezar tu colección pública.</p>
       </div>
     );
   }

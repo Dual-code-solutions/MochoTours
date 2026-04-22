@@ -10,7 +10,7 @@ import { getContactInfoISR } from '@/shared/api/getContactInfo';
 export const revalidate = 300;
 
 export const metadata = {
-  title: 'Cenotes Homún Yucatán | Tours, Ubicación y Reservaciones | Mochótours',
+  title: 'Cenotes Homún Yucatán | Tours, Ubicación y Reservaciones | Mochotours',
   description: 'Vive la aventura en los cenotes de Homún, Yucatán. Tours guiados con más de 10 años de experiencia, ubicación a 1 hora de Mérida. Reservaciones por WhatsApp. Abierto todos los días.',
 };
 
@@ -21,7 +21,7 @@ export default async function HomePage() {
     '@context': 'https://schema.org',
     '@type': ['LocalBusiness', 'TouristAttraction'],
     name: FALLBACK_DATA.identidad.nombre_negocio,
-    description: 'Tours guiados por los cenotes más impresionantes de Homún, Yucatán. Experiencia auténtica en moto-taxi maya con guía local bilingüe.',
+    description: 'Tours guiados por los cenotes más impresionantes de Homún, Yucatán. Experiencia auténtica en moto-taxi tradicional con guía local bilingüe.',
     url: 'https://cenotesaventuraymas.com',
     telephone: `+${FALLBACK_DATA.contacto.telefono_whatsapp_principal}`,
     image: '/cenote-aventura-homun.png',

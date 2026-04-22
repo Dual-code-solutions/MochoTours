@@ -12,6 +12,7 @@ export type User = {
 /** Sesión devuelta por el backend al hacer login */
 export type AuthSession = {
   accessToken: string;
+  refreshToken: string;
   user: User;
 };
 

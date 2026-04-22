@@ -17,9 +17,9 @@ export function getLocalBusinessJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'TouristAttraction',
-    name: 'Cenotes Aventura y Más — Mochótours',
+    name: 'Cenotes Aventura y Más — Mochotours',
     description:
-      'Tours guiados a los cenotes más impresionantes de Homún, Yucatán. Experiencia auténtica con moto-taxi maya tradicional y guía local.',
+      'Tours guiados a los cenotes más impresionantes de Homún, Yucatán. Experiencia auténtica con moto-taxi tradicional y guía local.',
     url: 'https://cenoteshomun.com',
     telephone: '+529991234567',
     address: {

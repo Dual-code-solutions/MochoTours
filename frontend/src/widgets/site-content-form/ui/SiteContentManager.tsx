@@ -7,11 +7,37 @@ import { DeleteButton } from '@/features/delete-site-section';
 import { Card } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { PlusCircle, Link as LinkIcon, TextSelect, ImageIcon, Edit3 } from 'lucide-react';
+import { PlusCircle, ImageIcon, Edit3, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Claves maestras que la web espera por diseño (aseguramos que siempre se ofrezcan al administrador)
+// Claves maestras
 const BASE_SECTIONS = ['hero_banner', 'about_us', 'experience_mototaxi', 'location', 'footer'];
+
+// Nombres amigables para las secciones
+const SECTION_NAMES: Record<string, string> = {
+  'hero_banner': '1. Banner Principal',
+  'about_us': '2. Sobre el Guía',
+  'experience_mototaxi': '3. Experiencia',
+  'location': '4. Ubicación',
+  'footer': '5. Pie de Página'
+};
+
+function StatusBadge({ type, hasContent }: { type: 'text' | 'image'; hasContent: boolean }) {
+  if (hasContent) {
+    return (
+      <span className="text-xs text-green-700 flex items-center gap-1">
+        <CheckCircle2 className="w-3.5 h-3.5" />
+        {type === 'text' ? 'Texto completo' : 'Imagen cargada'}
+      </span>
+    );
+  }
+  return (
+    <span className="text-xs text-amber-600 flex items-center gap-1">
+      <AlertTriangle className="w-3.5 h-3.5" />
+      {type === 'text' ? 'Sin texto' : 'Sin imagen'}
+    </span>
+  );
+}
 
 export function SiteContentManager() {
   const [contentMap, setContentMap] = useState<SiteContent>({});
@@ -59,15 +85,15 @@ export function SiteContentManager() {
   const allSectionsToDisplay = [...BASE_SECTIONS, ...dynamicKeys];
 
   return (
-    <div className="flex flex-col gap-8 lg:flex-row lg:items-start pb-10">
+    <div className="pb-10">
       
-      {/* ── Lista Izquierda (Tarjetas) ────────────────────────── */}
-      <div className="w-full lg:w-1/3 flex flex-col gap-4">
+      {/* ── Grid de Tarjetas ────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 5 }).map((_, i) => (
             <Card key={i} className="p-5 flex flex-col gap-3">
+               <Skeleton className="h-32 w-full rounded-lg mb-2" />
                <Skeleton className="h-4 w-3/4 rounded-full" />
-               <Skeleton className="h-3 w-full rounded-full" />
                <Skeleton className="h-3 w-1/2 rounded-full" />
             </Card>
           ))
@@ -75,131 +101,143 @@ export function SiteContentManager() {
           <>
             {allSectionsToDisplay.map((secKey) => {
               const data = contentMap[secKey];
-              const isEditing = editingKey === secKey;
+              const friendlyName = SECTION_NAMES[secKey] || secKey;
               
               return (
                 <div 
                   key={secKey} 
-                  className={`
-                    relative group transition-all duration-200 overflow-hidden rounded-xl border
-                    ${isEditing ? 'border-primary ring-2 ring-primary/20 shadow-md bg-stone-50' : 'border-stone-200 hover:border-primary/50 bg-white hover:shadow-sm'}
-                  `}
+                  onClick={() => { setEditingKey(secKey); setIsCreatingNew(false); }}
+                  className="bg-white rounded-xl border border-stone-200 p-5 hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group flex flex-col"
                 >
-                  <div className="p-5">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-100 text-xs font-semibold text-stone-500 mb-2 font-mono">
-                          <LinkIcon className="h-3 w-3" /> /{secKey}
+                  {/* Thumbnail / Preview */}
+                  <div className="aspect-video rounded-lg overflow-hidden bg-stone-100 mb-4 relative">
+                    {data?.imagenUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={data.imagenUrl} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt="Preview" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-stone-400 bg-stone-50">
+                        <ImageIcon className="w-8 h-8 opacity-40" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 flex flex-col">
+                    <h4 className="font-bold text-stone-800 text-lg leading-tight mb-0.5">
+                      {friendlyName}
+                    </h4>
+                    <p className="text-[11px] text-stone-400 font-mono mb-3 uppercase tracking-wider">
+                      {secKey}
+                    </p>
+                    
+                    {!data?.titulo && !data?.descripcion && !data?.imagenUrl ? (
+                      <div className="mt-auto p-3 bg-amber-50 rounded-lg text-center border border-amber-100/50">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 mx-auto mb-1.5" />
+                        <p className="text-xs font-medium text-amber-800 mb-2">
+                          Esta sección está vacía
+                        </p>
+                        <span className="text-xs font-semibold text-primary flex items-center justify-center gap-1">
+                          Agregar contenido <ArrowRight className="w-3 h-3" />
                         </span>
-                        <h4 className="font-bold text-stone-800 text-lg leading-tight mb-1">
-                          {data?.titulo || <span className="text-stone-300 italic">Sin Título</span>}
-                        </h4>
-                        
-                        {/* Indicadores visuales */}
-                        <div className="flex gap-4 mt-3 text-sm text-stone-500">
-                          {data?.descripcion ? (
-                            <span className="flex items-center gap-1.5"><TextSelect className="h-4 w-4" /> Texto</span>
-                          ) : (
-                            <span className="flex items-center gap-1.5 opacity-40 line-through"><TextSelect className="h-4 w-4" /> Texto</span>
-                          )}
-                          {data?.imagenUrl ? (
-                            <span className="flex items-center gap-1.5 text-primary"><ImageIcon className="h-4 w-4" /> Imagen</span>
-                          ) : (
-                            <span className="flex items-center gap-1.5 opacity-40 line-through"><ImageIcon className="h-4 w-4" /> Imagen</span>
+                      </div>
+                    ) : (
+                      <div className="mt-auto flex flex-col gap-2">
+                        <div className="flex items-center gap-4">
+                          <StatusBadge type="text" hasContent={!!data?.descripcion || !!data?.titulo} />
+                          <StatusBadge type="image" hasContent={!!data?.imagenUrl} />
+                        </div>
+                        <div className="mt-3 flex items-center justify-between border-t border-stone-100 pt-3">
+                          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary font-semibold text-xs rounded-lg transition-colors">
+                            <Edit3 className="w-3.5 h-3.5" />
+                            Editar
+                          </button>
+                          
+                          {data && !BASE_SECTIONS.includes(secKey) && (
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <DeleteButton seccionId={secKey} onDeleted={handleDeleteSuccess} />
+                            </div>
                           )}
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col items-center gap-2">
-                        <Button 
-                          variant={isEditing ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => {
-                             setEditingKey(isEditing ? null : secKey);
-                             setIsCreatingNew(false);
-                          }}
-                        >
-                          {isEditing ? 'Editando' : <><Edit3 className="h-4 w-4 lg:mr-2" /> <span className="hidden lg:block">Editar</span></>}
-                        </Button>
-
-                        {data && !BASE_SECTIONS.includes(secKey) && (
-                          <DeleteButton seccionId={secKey} onDeleted={handleDeleteSuccess} />
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               );
             })}
 
-            {/* Nueva Sección Custom */}
+            {/* Tarjeta para Nueva Sección Custom */}
             {isCreatingNew ? (
-              <div className="p-5 border-2 border-dashed border-primary rounded-xl bg-primary/5 text-center">
+              <div className="p-5 border-2 border-dashed border-primary rounded-xl bg-primary/5 text-center flex flex-col justify-center">
                  <p className="text-sm text-primary font-medium mb-3">Defina la clave (URL) de su bloque</p>
                  <input 
                    type="text" 
                    value={newSectionKey}
                    onChange={e => setNewSectionKey(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                    placeholder="ej_ seccion_extra"
-                   className="w-full text-center p-2 rounded border border-stone-200 focus:outline-primary mb-3 bg-white"
+                   className="w-full text-center p-2 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary mb-3 bg-white text-sm"
                    autoFocus
                  />
-                 <Button 
-                   size="sm" 
-                   className="w-full"
-                   disabled={newSectionKey.length < 3}
-                   onClick={() => {
-                     setEditingKey(newSectionKey);
-                     setIsCreatingNew(false);
-                   }}
-                 >
-                   Continuar Edición
-                 </Button>
+                 <div className="flex gap-2">
+                   <Button variant="outline" size="sm" className="flex-1" onClick={() => setIsCreatingNew(false)}>Cancelar</Button>
+                   <Button 
+                     size="sm" 
+                     className="flex-1"
+                     disabled={newSectionKey.length < 3}
+                     onClick={() => {
+                       setEditingKey(newSectionKey);
+                       setIsCreatingNew(false);
+                     }}
+                   >
+                     Crear
+                   </Button>
+                 </div>
               </div>
             ) : (
               <Button 
                 variant="outline" 
                 onClick={() => { setIsCreatingNew(true); setEditingKey(null); }}
-                className="w-full py-8 text-stone-500 hover:text-primary hover:border-primary border-2 border-dashed border-stone-200 bg-white"
+                className="w-full h-full min-h-[250px] text-stone-500 hover:text-primary hover:bg-primary/5 hover:border-primary border-2 border-dashed border-stone-200 bg-white rounded-xl flex flex-col items-center justify-center gap-2"
               >
-                <PlusCircle className="mr-2 h-5 w-5" /> Agregar Componente Dinámico Extra
+                <PlusCircle className="h-8 w-8 mb-2 opacity-50" />
+                <span className="font-medium text-sm">+ Agregar sección personalizada</span>
               </Button>
             )}
           </>
         )}
       </div>
 
-      {/* ── Área Derecha (Formulario Activo) ───────────────────────── */}
-      <div className="w-full lg:w-2/3">
-        {editingKey ? (
-           <Card className="p-6 lg:p-8 animate-in fade-in slide-in-from-bottom-4 shadow-xl border-t-4 border-t-primary rounded-2xl">
-             <div className="mb-6 pb-6 border-b border-stone-100 flex items-center justify-between">
-               <div>
-                 <h3 className="text-2xl font-bold text-stone-dark font-fraunces">Editando Contenido Vital</h3>
-                 <p className="text-stone-500 mt-1">Los cambios se guardan localmente para el identificador en código: <strong className="font-mono bg-stone-100 px-2 py-0.5 rounded text-primary text-sm">{editingKey}</strong></p>
-               </div>
-             </div>
-             
-             {/* Renderizamos el formulario delegándole la sección */}
-             <SectionForm 
-               key={editingKey} // Forzamos remounting si la key cambia
-               seccionId={editingKey} 
-               seccionActual={contentMap[editingKey]} 
-               onSuccess={handleUpdateSuccess} 
-             />
-           </Card>
-        ) : (
-           <div className="hidden lg:flex flex-col items-center justify-center p-16 text-center border-2 border-dashed border-stone-200 rounded-2xl bg-stone-50/50 min-h-[400px]">
-             <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-sm text-stone-400 mb-4">
-               <TextSelect className="h-8 w-8" />
-             </div>
-             <h3 className="text-xl font-bold text-stone-400">Panel de Escritura Cerrado</h3>
-             <p className="max-w-sm mt-2 text-stone-500">
-               Seleccione "Editar" en cualquiera de las divisiones de su izquierda para acceder al editor y alterar los textos o fotografías públicas.
-             </p>
-           </div>
-        )}
-      </div>
+      {/* ── Modal de Edición (Mobile Drawer / Desktop Centered) ── */}
+      {editingKey && (
+        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-stone-900/60 backdrop-blur-sm sm:p-4">
+          <div 
+            className="bg-white w-full max-w-2xl h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex-shrink-0 flex items-center justify-between p-5 border-b border-stone-100">
+              <div>
+                <h3 className="text-xl sm:text-2xl font-bold text-stone-800 font-fraunces leading-tight">
+                  Editando {SECTION_NAMES[editingKey] || 'Sección'}
+                </h3>
+                <p className="text-stone-500 mt-1.5 text-xs">
+                  ID: <span className="font-mono bg-stone-100 px-1.5 py-0.5 rounded text-stone-600">{editingKey}</span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 bg-stone-50/50">
+              <SectionForm 
+                key={editingKey} 
+                seccionId={editingKey} 
+                seccionActual={contentMap[editingKey]} 
+                onSuccess={handleUpdateSuccess}
+                onCancel={() => {
+                  setEditingKey(null);
+                  setIsCreatingNew(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

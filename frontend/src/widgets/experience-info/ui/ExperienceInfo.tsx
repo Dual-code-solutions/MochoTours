@@ -152,9 +152,10 @@ export function ExperienceInfo() {
         >
           <Image
             src={mototaxiImagen}
-            alt="Familia viajando en moto-taxi maya tradicional en Homún, Yucatán"
+            alt="Familia viajando en moto-taxi tradicional en Homún, Yucatán"
             fill
             sizes="100vw"
+            priority
             className="object-cover"
           />
         </div>

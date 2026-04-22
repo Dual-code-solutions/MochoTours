@@ -4,7 +4,7 @@ import { useCallback, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthContext } from '@/app/providers/auth-provider';
 import { login as apiLogin } from '../api/authApi';
-import { setToken, removeToken } from '@/shared/api/apiClient';
+import { setToken, removeToken, setRefreshToken } from '@/shared/api/apiClient';
 import { ROUTES } from '@/shared/config/routes';
 import type { LoginInput, User } from './types';
 
@@ -36,8 +36,9 @@ export function useAuth() {
     async (input: LoginInput): Promise<User> => {
       const session = await apiLogin(input);
 
-      // Guardar token en localStorage
+      // Guardar tokens en localStorage
       setToken(session.accessToken);
+      setRefreshToken(session.refreshToken);
 
       // Actualizar estado global
       setState({

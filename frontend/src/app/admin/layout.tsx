@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: {
     default: 'Panel Admin',
-    template: '%s | Admin — Mochótours',
+    template: '%s | Admin — Mochotours',
   },
   robots: {
     index: false,

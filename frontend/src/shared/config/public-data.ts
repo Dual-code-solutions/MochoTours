@@ -16,14 +16,14 @@ export const PUBLIC_LINKS = [
 export const FALLBACK_DATA = {
   identidad: {
     nombre_negocio: "Cenotes Aventura y Más",
-    subtitulo: "Homún Yuc Mochótours",
+    subtitulo: "Homún Yuc Mochotours",
     eslogan: "Vive la aventura en los cenotes más impresionantes de Homún, Yucatán",
   },
   heroBanner: {
     titulo: "Cenotes Aventura y Más", // Titulo por defecto elegante, no gritado
     descripcion: "Vive la aventura en los cenotes más impresionantes de Homún, Yucatán",
     // Placeholder físico, un fallback local sólido (o un link externo a una imagen estática default)
-    imagenUrl: "/cenote-aventura-homun.png" 
+    imagenUrl: "/cenote-hero-principal-homun.png"
   },
   aboutGuide: {
     nombre_completo: "Pedro Poot Chan",
@@ -32,7 +32,7 @@ export const FALLBACK_DATA = {
     idiomas: ["Español", "Maya"],
     es_local: "100% de Homún",
     historia: "Soy originario de Homún y decidí emprender el servicio de guía para enseñar la cultura, la gastronomía y sobre todo los cenotes de mi bello Homún. Contamos con 10 años de experiencia llevando turistas a vivir aventuras inolvidables.",
-    imagenUrl: "/pedro-poot-guia-cenotes-homun.jpg",
+    imagenUrl: "/guia-turistico-pedro-poot-homun.jpeg",
     chips: [
       { label: "Español y Maya", icon: "languages" },
       { label: "10 años de experiencia", icon: "award" },
@@ -44,19 +44,19 @@ export const FALLBACK_DATA = {
       // ─── DATOS ✅ REALES (del documento del guía) ───
       { icon: "clock",        titulo: "4 a 5 horas",          descripcion: "Duración promedio del tour completo por los cenotes." },
       { icon: "trees",        titulo: "3 a 4 cenotes",        descripcion: "Recorre cenotes familiares, extremos o grutas, tú eliges." },
-      { icon: "bike",         titulo: "Moto-taxi o vehículo", descripcion: "Transporte en moto-taxi tradicional maya o vehículo particular." },
+      { icon: "bike",         titulo: "Moto-taxi o vehículo", descripcion: "Transporte en moto-taxi tradicional o vehículo particular." },
       { icon: "map-pin",      titulo: "Punto de encuentro",   descripcion: "Calle 20 entre 5 y 5a, a 50 metros de la gasolinera Pemex, Homún." },
       { icon: "users",        titulo: "2 a 50 personas",      descripcion: "Tours privados y familiares. Equipo adecuado para cualquier tamaño de grupo." },
       { icon: "languages",    titulo: "Español y Maya",       descripcion: "Tu guía habla español y maya, conectándote con la cultura local." },
       { icon: "backpack",     titulo: "Qué llevar",           descripcion: "Ropa cómoda, zapatos adecuados, toalla. NO cremas solares ni mezclilla al agua." },
-      // ─── DATOS 🟡 PLACEHOLDER (datos falsos de relleno, verificar con el guía) ───
-      { icon: "baby",         titulo: "Apto desde 5 años",    descripcion: "Hay cenotes familiares perfectos para los más pequeños de la casa." }, // ⚠️ DATO FALSO — verificar edad mínima con Pedro
-      { icon: "settings",     titulo: "Tour personalizable",  descripcion: "Personaliza tu ruta: cenotes familiares, extremos o grutas según tu preferencia." },
+      // ─── DATOS ✅ REALES (verificado con el guía) ───
+      { icon: "baby",         titulo: "Apto para todas las edades",    descripcion: "Aceptamos bebés, niños y adultos mayores. Cenotes de fácil acceso para todos." },
+      { icon: "settings",     titulo: "Grupos y familias a tu medida",  descripcion: "Adaptamos la ruta para tu familia o para grupos grandes de hasta 50 personas. Elige cenotes tranquilos, extremos o grutas." },
     ],
     mototaxi: {
       imagenUrl: "/mototaxi-tradicional-maya-homun.jpg",
       titulo: "Viaja como local",
-      descripcion: "Nuestros tours usan moto-taxi maya tradicional, una experiencia auténtica que no encontrarás en tours turísticos convencionales."
+      descripcion: "Nuestros tours usan moto-taxi tradicional, una experiencia auténtica que no encontrarás en tours turísticos convencionales."
     }
   },
   galeriaPreview: [
@@ -77,7 +77,7 @@ export const FALLBACK_DATA = {
   },
   footer: {
     titulo: "¿Listo para la aventura?",
-    descripcion: "Reserva tu tour directamente con nosotros",
+    descripcion: "Respondemos en minutos. Reserva directo, sin intermediarios.",
     imagenUrl: "/cenote-cristalino-footer-homun.jpg",
   },
   contacto: {

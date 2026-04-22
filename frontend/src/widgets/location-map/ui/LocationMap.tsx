@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getSiteContent } from '@/entities/site-content';
 import { FALLBACK_DATA } from '@/shared/config/public-data';
-import { MapPin, Clock, Phone, Navigation, Star, MessageCircle, Car, CreditCard, Lightbulb, ShieldCheck, Quote } from 'lucide-react';
+import { MapPin, Clock, Phone, Navigation, Star, MessageCircle, Car, CreditCard, ShieldCheck } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 
 import type { ContactInfo } from '@/shared/api/getContactInfo';
@@ -17,7 +17,6 @@ interface LocationMapProps {
 export function LocationMap({ contactInfo }: LocationMapProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [showStickyCta, setShowStickyCta] = useState(false);
   const [locationData, setLocationData] = useState<{
     titulo?: string | null;
     descripcion?: string | null;
@@ -39,17 +38,7 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Sticky CTA: aparece en mobile cuando el usuario pasa de la sección
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      // Mostrar cuando la sección ya se pasó de pantalla
-      setShowStickyCta(rect.bottom < 0);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+
 
   // Fetch datos del backend (silencioso, con fallback local)
   useEffect(() => {
@@ -76,12 +65,34 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
   const phone2 = contactInfo?.phoneSecondary || FALLBACK_DATA.contacto.telefono_whatsapp_secundario;
   const googleMapsUrl = contactInfo?.googleMapsUrl || loc.google_maps_url;
 
-  // Helper para stagger animation
-  const stagger = (delayMs: number) =>
-    `transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`;
+
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Ubicación y Contacto - Mochotours",
+    "description": "Información de contacto, ubicación y reservas de Mochotours en Homún, Yucatán.",
+    "url": "https://mochotours.com/#contacto",
+    "mainEntity": {
+      "@type": "LocalBusiness",
+      "name": "Cenotes Aventura y Más Homún",
+      "telephone": `+${phone1}`,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": loc.direccion,
+        "addressLocality": "Homún",
+        "addressRegion": "Yucatán",
+        "addressCountry": "MX"
+      }
+    }
+  };
 
   return (
-    <section ref={sectionRef} className="bg-white py-20 lg:py-28">
+    <section ref={sectionRef} className="bg-white py-20 lg:py-28" id="contacto">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
 
         {/* ═══ ENCABEZADO CON SOCIAL PROOF ═══ */}
@@ -107,6 +118,7 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
             href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Ver reseñas en Google Maps"
             className={`inline-flex items-center gap-3 mt-6 px-5 py-2.5 bg-white rounded-full border border-stone-200 shadow-sm hover:shadow-md hover:border-stone-300 transition-all duration-500 ease-out delay-100 group cursor-pointer ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
@@ -139,7 +151,7 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
 
           {/* ═══ COLUMNA IZQUIERDA: MAPA ═══ */}
           <div
-            className={`transition-all duration-700 ease-out delay-100 ${
+            className={`flex flex-col gap-6 transition-all duration-700 ease-out delay-100 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
@@ -155,6 +167,21 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
               />
               <div className="absolute inset-0 bg-stone-900/5 group-hover/map:bg-transparent transition-colors pointer-events-none hidden lg:block" />
             </div>
+
+            {/* Foto decorativa extra debajo del mapa (Oculta en móvil) */}
+            <div className="hidden lg:block rounded-2xl overflow-hidden shadow-[0_12px_32px_-16px_rgba(0,0,0,0.18)] border border-stone-200 relative w-full aspect-[16/9] xl:aspect-[4/3] group cursor-pointer">
+              <Image
+                src="/tour-cenotes-homun-yucatan-aventura.jpeg"
+                alt="Turistas disfrutando de un tour guiado en los cenotes de Homún, Yucatán con Mochotours"
+                fill
+                sizes="(max-width: 1024px) 100vw, 33vw"
+                className="object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex flex-col justify-end p-6 pointer-events-none">
+                <span className="text-white/90 text-[10px] tracking-widest uppercase font-bold mb-1 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">Tours en Yucatán</span>
+                <p className="text-white font-medium text-lg drop-shadow-md translate-y-0 transition-transform duration-500">¡Tu aventura en los cenotes de Homún te espera!</p>
+              </div>
+            </div>
           </div>
 
           {/* ═══ COLUMNA DERECHA: FOTO + INFO ═══ */}
@@ -168,7 +195,7 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
             >
               <Image
                 src={imagenUrl}
-                alt="Vista aérea del cenote en Homún, Yucatán — punto de encuentro para tours con Mochótours"
+                alt="Vista aérea del cenote en Homún, Yucatán — punto de encuentro para tours con Mochotours"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.015]"
@@ -213,15 +240,16 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
                 </div>
                 <div>
                   <h3 className="font-semibold text-stone-900 text-sm">Horarios</h3>
-                  <p className="text-stone-600 text-xs mt-0.5">{loc.horarios}</p>
+                  <p className="text-stone-600 text-xs mt-0.5">Todos los días de 9:00 am a 6:00 pm</p>
                 </div>
               </div>
 
               {/* Reservación Principal */}
               <Link
-                href={`https://wa.me/${phone1}`}
+                href={`https://wa.me/${phone1}?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20los%20tours%20de%20cenotes`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Reservar por WhatsApp al número principal"
                 className="flex items-start gap-3 p-4 bg-primary/5 rounded-xl border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200 group/card"
               >
                 <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center group-hover/card:bg-primary/20 transition-colors">
@@ -241,9 +269,10 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
 
               {/* Contacto Secundario */}
               <Link
-                href={`https://wa.me/${phone2}`}
+                href={`https://wa.me/${phone2}?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20los%20tours%20de%20cenotes`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Contactar al número alterno"
                 className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl hover:bg-stone-100 hover:shadow-sm transition-all duration-200 group/card"
               >
                 <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-stone-200/60 flex items-center justify-center group-hover/card:bg-stone-300/60 transition-colors">
@@ -251,8 +280,8 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
                 </div>
                 <div>
                   <h3 className="font-semibold text-stone-900 text-sm flex items-center gap-2">
-                    Contacto alterno
-                    <span className="text-[10px] bg-stone-100 text-stone-400 px-2 py-0.5 rounded-full font-medium tracking-wide">Secundario</span>
+                    Otro número
+                    <span className="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-bold tracking-wide">Secundario</span>
                   </h3>
                   <span className="text-stone-600 text-xs hover:text-primary mt-1 inline-flex items-center gap-1">
                     +52 999 416 64 37
@@ -260,6 +289,39 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
                   </span>
                 </div>
               </Link>
+
+              {/* Estacionamiento */}
+              <div className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl hover:bg-stone-100 transition-colors">
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-stone-200/60 flex items-center justify-center">
+                  <Car className="h-4 w-4 text-stone-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-stone-900 text-sm">Estacionamiento</h3>
+                  <p className="text-stone-600 text-xs mt-0.5">Totalmente gratuito</p>
+                </div>
+              </div>
+
+              {/* Métodos de Pago */}
+              <div className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl hover:bg-stone-100 transition-colors">
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-stone-200/60 flex items-center justify-center">
+                  <CreditCard className="h-4 w-4 text-stone-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-stone-900 text-sm">Métodos de pago</h3>
+                  <p className="text-stone-600 text-xs mt-0.5">Efectivo y transferencia</p>
+                </div>
+              </div>
+
+              {/* Operador y Seguridad */}
+              <div className="sm:col-span-2 flex items-start gap-3 p-4 bg-stone-50 rounded-xl hover:bg-stone-100 transition-colors">
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-stone-200/60 flex items-center justify-center">
+                  <ShieldCheck className="h-4 w-4 text-stone-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-stone-900 text-sm">Seguridad y Confianza</h3>
+                  <p className="text-stone-600 text-xs mt-0.5">Operador con +10 años de experiencia. Seguridad incluida.</p>
+                </div>
+              </div>
             </div>
 
             {/* ═══ DOS CTAs LADO A LADO ═══ */}
@@ -269,7 +331,7 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
               }`}
             >
               {/* CTA Secundario — Cómo llegar */}
-              <Link href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+              <Link href={googleMapsUrl} target="_blank" rel="noopener noreferrer" aria-label="Abrir mapa para ver cómo llegar" className="flex-1">
                 <Button
                   variant="outline"
                   size="lg"
@@ -282,9 +344,10 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
 
               {/* CTA Principal — Reservar WhatsApp */}
               <Link
-                href={`https://wa.me/${phone1}?text=Hola%2C%20me%20interesa%20reservar%20un%20tour%20de%20cenotes`}
+                href={`https://wa.me/${phone1}?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20los%20tours%20de%20cenotes`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Reservar tour por WhatsApp"
                 className="flex-1"
               >
                 <Button
@@ -299,52 +362,8 @@ export function LocationMap({ contactInfo }: LocationMapProps) {
 
           </div>
         </div>
-
-        {/* ═══ TRUST SIGNALS (Opción A unificada en Mobile y Desktop) ═══ */}
-        <div
-          className={`mt-10 md:mt-12 flex flex-col items-center gap-4 transition-all duration-700 ease-out delay-500 max-w-4xl mx-auto ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`}
-        >
-          {/* Grid unificado de chips compactos (2x Mobile, Flexwrap Desktop) */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:flex flex-wrap justify-center gap-2 md:gap-3 w-full px-4 text-center items-stretch">
-            {[
-              { icon: Car, text: 'Estacionamiento' },
-              { icon: CreditCard, text: 'Efectivo/Transfer' },
-              { icon: Lightbulb, text: '10am – 2pm' },
-              { icon: ShieldCheck, text: 'Operador +10 años' },
-              { icon: ShieldCheck, text: 'Seguridad incluida' },
-            ].map(({ icon: Icon, text }) => (
-              <div
-                key={text}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 md:py-2 md:px-4 bg-white border border-stone-200 rounded-lg md:rounded-full text-[13px] md:text-sm text-stone-600 shadow-sm md:shadow-none md:bg-transparent md:border-stone-200"
-              >
-                <Icon className="h-4 w-4 text-stone-400 shrink-0" strokeWidth={1.5} />
-                <span className="truncate">{text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
-      {/* ═══ STICKY CTA — MOBILE ═══ */}
-      {showStickyCta && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-white/80 backdrop-blur-lg border-t border-stone-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] lg:hidden animate-in slide-in-from-bottom-4 duration-300">
-          <Link
-            href={`https://wa.me/${phone1}?text=Hola%2C%20me%20interesa%20reservar%20un%20tour%20de%20cenotes`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button
-              size="lg"
-              className="w-full rounded-xl !bg-[#25D366] hover:!bg-[#1DA851] text-white h-12 text-sm font-semibold shadow-[var(--shadow-glow-whatsapp)] transition-all"
-            >
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Reservar por WhatsApp
-            </Button>
-          </Link>
-        </div>
-      )}
 
     </section>
   );

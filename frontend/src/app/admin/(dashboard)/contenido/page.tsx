@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { SiteContentManager } from '@/widgets/site-content-form/ui/SiteContentManager';
 
 export const metadata: Metadata = {
-  title: 'Contenido del Sitio | Admin Mochótours',
+  title: 'Contenido del Sitio | Admin Mochotours',
 };
 
 export default function AdminContenidoPage() {

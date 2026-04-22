@@ -46,10 +46,11 @@ export default function AdminLoginPage() {
             <div className="flex justify-center mb-6">
               <Image
                 src="/logo.png"
-                alt="Mochótours Logo"
+                alt="Mochotours Logo"
                 width={180}
                 height={48}
                 className="h-12 w-auto"
+                style={{ width: 'auto', height: '100%' }}
                 priority
               />
             </div>

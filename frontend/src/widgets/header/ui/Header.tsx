@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, MessageCircle } from 'lucide-react';
@@ -11,8 +12,11 @@ import { Button } from '@/shared/ui/button';
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
   const [activeSection, setActiveSection] = useState('inicio');
+  const pathname = usePathname();
+
+  // Si estamos en una sub-página (no homepage), forzar estilo scrolled
+  const isSubPage = pathname !== '/';
 
   // Escucha del Scroll inteligente para mutar transparencias y detectar sección activa
   useEffect(() => {
@@ -20,27 +24,28 @@ export function Header() {
       setIsScrolled(window.scrollY > 80);
     };
     
-    // Check inicial y asignación de listeners
     handleScroll(); 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Intersection Observer para rastrear la sección visible actualmente
+  // Intersection Observer para rastrear la sección visible actualmente (solo en homepage)
   useEffect(() => {
+    if (isSubPage) return; // No rastrear secciones en sub-páginas
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && entry.target.id) {
           setActiveSection(entry.target.id);
         }
       });
-    }, { threshold: 0.3 }); // Si vemos un 30% de la sección, la consideramos activa
+    }, { threshold: 0.3 });
 
     const sections = document.querySelectorAll('div[id="inicio"], section[id], div[id="contacto"]');
     sections.forEach(sec => observer.observe(sec));
 
     return () => observer.disconnect();
-  }, []);
+  }, [isSubPage]);
 
   // Bloqueo de scroll cuando Sidebar tactil está abierto
   useEffect(() => {
@@ -83,7 +88,7 @@ export function Header() {
         className={`fixed top-0 left-0 w-full transition-all duration-300 ${
           isMobileMenuOpen ? 'z-30' : 'z-50'
         } ${
-          isScrolled 
+          (isScrolled || isSubPage)
             ? 'bg-white backdrop-blur-md text-stone-900 shadow-md h-16 md:h-20' 
             : 'bg-transparent text-white h-20 md:h-[110px]'
         }`}
@@ -91,14 +96,15 @@ export function Header() {
         <div className="h-full px-6 lg:px-12 flex items-center justify-between max-w-7xl mx-auto">
           
           {/* 1. Logotipo Corporativo */}
-          <Link href="#inicio" className="flex items-center gap-3 relative z-50 transition-transform duration-300 hover:scale-105">
-             <div className={`relative flex items-center transition-all ${isScrolled ? 'h-14 w-36 md:w-44' : 'h-20 w-44 md:h-24 md:w-56'}`}>
+          <Link href="/" className="flex items-center gap-3 relative z-50 transition-transform duration-300 hover:scale-105">
+             <div className={`relative flex items-center transition-all ${(isScrolled || isSubPage) ? 'h-14' : 'h-20 md:h-24'}`}>
               <Image 
                 src="/logo.png"
                 alt="MochoTours Logo de Cenotes"
-                fill
-                sizes="(max-width: 768px) 176px, 224px"
-                className="object-contain object-left"
+                width={256}
+                height={128}
+                className="w-auto h-full object-contain object-left"
+                style={{ width: 'auto', height: '100%' }}
                 priority
               />
             </div>
@@ -107,23 +113,27 @@ export function Header() {
           {/* 2. Navegación Principal en Laptops/Escritorio */}
           <nav className="hidden md:flex items-center gap-8">
             {PUBLIC_LINKS.map((link) => {
-              const isActive = activeSection === link.href.replace('#', '');
+              const sectionId = link.href.replace('#', '');
+              const linkHref = isSubPage ? `/${link.href}` : link.href;
+              const isActive = isSubPage
+                ? (pathname === '/' + sectionId || pathname.startsWith('/' + sectionId))
+                : activeSection === sectionId;
+
               return (
                 <Link 
                   key={link.href} 
-                  href={link.href}
+                  href={linkHref}
                   className={`pb-1 font-medium tracking-wide text-[15px] relative group overflow-hidden transition-colors ${
                     isActive 
-                      ? (isScrolled ? 'text-primary font-bold' : 'text-white font-bold')
-                      : (isScrolled ? 'text-stone-700 hover:text-primary' : 'text-white/80 hover:text-white')
+                      ? ((isScrolled || isSubPage) ? 'text-primary font-bold' : 'text-white font-bold')
+                      : ((isScrolled || isSubPage) ? 'text-stone-700 hover:text-primary' : 'text-white/80 hover:text-white')
                   }`}
                 >
                   {link.label}
-                  {/* Subrayado interactivo animado */}
                   <span className={`absolute bottom-0 left-0 w-full h-[2.5px] transform transition-transform duration-300 ease-out ${
                     isActive 
-                      ? (isScrolled ? 'bg-primary translate-x-0' : 'bg-[#99F6E4] translate-x-0')
-                      : (isScrolled ? 'bg-primary -translate-x-full group-hover:translate-x-0' : 'bg-white -translate-x-full group-hover:translate-x-0')
+                      ? ((isScrolled || isSubPage) ? 'bg-primary translate-x-0' : 'bg-[#99F6E4] translate-x-0')
+                      : ((isScrolled || isSubPage) ? 'bg-primary -translate-x-full group-hover:translate-x-0' : 'bg-white -translate-x-full group-hover:translate-x-0')
                   }`} />
                 </Link>
               );
@@ -139,7 +149,7 @@ export function Header() {
              {isMobileMenuOpen ? (
                <X className="text-stone-900 h-8 w-8" />
              ) : (
-               <Menu className={`${isScrolled ? 'text-stone-900' : 'text-white'} h-8 w-8 transition-colors`} />
+               <Menu className={`${(isScrolled || isSubPage) ? 'text-stone-900' : 'text-white'} h-8 w-8 transition-colors`} />
              )}
           </button>
         </div>
@@ -160,8 +170,8 @@ export function Header() {
       >
          {/* HEADER DRAWER */}
          <div className="flex items-center justify-between pb-3 border-b border-stone-200 shrink-0">
-           <div className="relative h-12 w-32">
-             <Image src="/logo.png" alt="MochoTours Logo" fill sizes="128px" className="object-contain object-left" priority />
+           <div className="relative h-12">
+             <Image src="/logo.png" alt="MochoTours Logo" width={128} height={64} className="w-auto h-full object-contain object-left" style={{ width: 'auto', height: '100%' }} />
            </div>
            <button onClick={closeMobileMenu} className="p-2 -mr-2 text-stone-700 hover:text-stone-900 transition-colors" aria-label="Cerrar menú">
              <X className="h-7 w-7" />
@@ -171,11 +181,15 @@ export function Header() {
          {/* ENLACES MÓVIL */}
          <div className="flex-1 flex flex-col justify-center space-y-1">
             {PUBLIC_LINKS.map((link) => {
-              const isActive = activeSection === link.href.replace('#', '');
+              const sectionId = link.href.replace('#', '');
+              const linkHref = isSubPage ? `/${link.href}` : link.href;
+              const isActive = isSubPage
+                ? (pathname === '/' + sectionId || pathname.startsWith('/' + sectionId))
+                : activeSection === sectionId;
               return (
                 <Link 
                   key={link.href} 
-                  href={link.href}
+                  href={linkHref}
                   onClick={closeMobileMenu}
                   className={`flex items-center text-lg font-bold tracking-tight transition-all border-l-4 py-2 px-4 rounded-r-lg active:bg-stone-100 active:scale-[0.98] ${
                     isActive ? 'text-primary border-primary bg-primary/5' : 'text-stone-600 border-transparent hover:text-stone-900 hover:bg-stone-50'

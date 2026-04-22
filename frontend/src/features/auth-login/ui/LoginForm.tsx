@@ -51,24 +51,28 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormData) {
     try {
       await login(data);
-      toast.success('¡Bienvenido de vuelta!');
+      toast.success('¡Bienvenido de vuelta!', {
+        description: 'Redirigiendo al panel de control…',
+      });
       router.push(ROUTES.ADMIN);
     } catch (error) {
       if (error instanceof ApiException) {
         if (error.status === 401) {
-          toast.error('Credenciales inválidas', {
-            description: 'Verifica tu correo y contraseña.',
+          toast.error('Correo o contraseña incorrectos', {
+            description: 'Revisa que estés usando las credenciales correctas e intenta de nuevo.',
           });
         } else if (error.fieldErrors) {
           error.fieldErrors.forEach((fieldError) => {
             toast.error(fieldError.message);
           });
         } else {
-          toast.error(error.message);
+          toast.error('Algo salió mal', {
+            description: error.message || 'Intenta de nuevo en unos momentos.',
+          });
         }
       } else {
-        toast.error('Error de conexión', {
-          description: 'No se pudo conectar con el servidor.',
+        toast.error('Sin conexión al servidor', {
+          description: 'Verifica tu internet o intenta más tarde.',
         });
       }
     }
